@@ -3,10 +3,11 @@ import { Table, Button, Tag, Input, DatePicker, Space, Select } from "antd";
 import type { Dayjs } from 'dayjs';
 import type { ColumnType, ColumnGroupType } from 'antd/es/table';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
-import { EditOutlined, FilterOutlined } from "@ant-design/icons";
+import { EditOutlined, FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import { IDtcProfileWithDetails } from "../../interfaces/dtc-profile";
 import { useState } from "react";
 import { EditModal } from "./edit-modal";
+import { AddModal } from "./add-modal";
 import dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
@@ -17,6 +18,7 @@ type LogicalOperator = Exclude<CrudOperators, "or" | "and">;
 export const DtcProfilesList: React.FC = () => {
     const [selectedProfile, setSelectedProfile] = useState<IDtcProfileWithDetails | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const { mutateAsync } = useUpdate();
 
     const {
@@ -40,6 +42,11 @@ export const DtcProfilesList: React.FC = () => {
 
     const handleEditSuccess = () => {
         // Refetch the data to show the updated values
+        refetch();
+    };
+
+    const handleAddSuccess = () => {
+        // Refetch the data to show the new record
         refetch();
     };
 
@@ -381,6 +388,29 @@ export const DtcProfilesList: React.FC = () => {
         },
         {
             title: () => {
+                const filter = filters?.find((f: CrudFilter): f is LogicalFilter => isLogicalFilter(f) && f.field === "username");
+                return (
+                    <div>
+                        <div>Username</div>
+                        {filter && (
+                            <div style={{ fontSize: '12px', color: '#1890ff' }}>
+                                {formatFilterValue("username", filter.value, filter.operator)}
+                            </div>
+                        )}
+                    </div>
+                );
+            },
+            dataIndex: "username",
+            key: "username",
+            width: 150,
+            render: (username: string) => <span style={{ fontWeight: 500 }}>@{username}</span>,
+            filterDropdown: getTextFilterDropdown("username"),
+            filteredValue: filters?.find((f: CrudFilter): f is LogicalFilter => isLogicalFilter(f) && f.field === "username")?.value ? [filters.find((f: CrudFilter) => isLogicalFilter(f) && f.field === "username")?.value] : null,
+            filterIcon: (filtered: boolean) => <FilterOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
+            sorter: true,
+        },
+        {
+            title: () => {
                 const filter = filters?.find((f: CrudFilter): f is LogicalFilter => isLogicalFilter(f) && f.field === "profile_url");
                 return (
                     <div>
@@ -703,6 +733,16 @@ export const DtcProfilesList: React.FC = () => {
 
     return (
         <div style={{ width: "100%" }}>
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsAddModalOpen(true)}
+                    style={{ borderRadius: 6 }}
+                >
+                    Add New Profile
+                </Button>
+            </div>
             <Table
                 dataSource={data?.data}
                 columns={columns}
@@ -744,6 +784,13 @@ export const DtcProfilesList: React.FC = () => {
                 }}
                 profile={selectedProfile}
                 onSuccess={handleEditSuccess}
+            />
+            <AddModal
+                open={isAddModalOpen}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                }}
+                onSuccess={handleAddSuccess}
             />
         </div>
     );
