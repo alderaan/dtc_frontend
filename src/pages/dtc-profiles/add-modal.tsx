@@ -18,7 +18,7 @@ export const AddModal: React.FC<AddModalProps> = ({ open, onClose, onSuccess }) 
 
     const handleSubmit = () => {
         form.validateFields().then((values) => {
-            mutate(
+            mutate!(
                 {
                     resource: "dtc_profiles",
                     values: {
@@ -29,7 +29,7 @@ export const AddModal: React.FC<AddModalProps> = ({ open, onClose, onSuccess }) 
                 },
                 {
                     onSuccess: () => {
-                        openNotification({
+                        openNotification!({
                             type: "success",
                             message: "Profile created successfully",
                         });
@@ -40,7 +40,7 @@ export const AddModal: React.FC<AddModalProps> = ({ open, onClose, onSuccess }) 
                         onSuccess?.();
                     },
                     onError: (error) => {
-                        openNotification({
+                        openNotification!({
                             type: "error",
                             message: "Failed to create profile",
                             description: error.message,
